@@ -47,7 +47,7 @@ if not os.path.exists(log_path):
 # main_model_path = os.path.join(log_path, exp_name_main_model)
 # assert os.path.exists(main_model_path)
 
-exp_name = "finetuner_34_scale{}_m{}_rep{}_mr_v1_03".format(data.scale[0], m, block_reps)
+exp_name = "finetuner_34_scale{}_m{}_rep{}_mr_v1".format(data.scale[0], m, block_reps)
 log_dir = os.path.join(log_path, exp_name)
 if not os.path.exists(log_dir):
     os.mkdir(log_dir)
