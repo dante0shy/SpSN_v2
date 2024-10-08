@@ -10,11 +10,16 @@ You can follow the Installation of [MinkowskiEngine](https://github.com/NVIDIA/M
 
 Training:
 
-Firstly, the dataset setting is in the data_base and val_base of config.yaml.
+Firstly, the dataset setting is in the ```val_base``` and ```data_base``` in the dataset code, and ```log_pos``` in the train or val code.
 Modify it to the direction of your own dataset.
 Secondly, run as following:
 
 ```
+# for main network training
+cd train/mf_v1
+python unet_v1_34.py
+
+# for TVPR training
 cd train/mf_v1
 python unet_add_v1_34.py
 ```
@@ -28,9 +33,7 @@ cd train/mf_v1
 python val_add_34.py
 ```
 
-If you want to use our trained model, add 'val_model_dir' under 'model' in the config.yaml.
-The val_model_dir is the directory of your model.
 
-Our trained model is in [here](https://drive.google.com/file/d/1mgOg9bsozfiXxc5EhtpVAbIcg1BXAbDu/view?usp=sharing)
+Our trained model is in [here](https://drive.google.com/drive/folders/1GBA4gCi9_dylUzQNoS8XTveqf_uww2im?usp=sharing)
 
 
