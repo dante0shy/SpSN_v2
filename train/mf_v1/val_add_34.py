@@ -137,12 +137,12 @@ training_epochs = 50
 epoch_s = 0
 # snap = glob.glob(os.path.join(main_model_path, "net*.pth"))/home/dante0shy/remote_workplace/SpSN_v2/pretrained
 # snap = list(sorted(snap, key=lambda x: int(x.split("-")[-1].split(".")[0])))
-snap = [os.path.join(
+main_snap = [os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     'pretrained',
     'v9-34c-000000028.pth')]
-print("Restore from " + snap[-1])
-unet.load_state_dict(torch.load(snap[-1]))
+print("Restore from " + main_snap[-1])
+unet.load_state_dict(torch.load(main_snap[-1]))
 # for p in unet.parameters(): p.requires_grad = False
 
 train_first = True
@@ -150,11 +150,11 @@ pertrain = False
 
 # snap = glob.glob(os.path.join(log_dir, "v2p-fintuner*.pth"))
 # snap = list(sorted(snap, key=lambda x: int(x.split("-")[-1].split(".")[0])))
-snap= [os.path.join(
+add_snap= [os.path.join(
         os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     'pretrained',
     'v2p-fintuner-01-34-000000013.pth')]
-for s in reversed(snap):
+for s in reversed(add_snap):
     print("Restore from " + s)
     v2p_fintuner.load_state_dict(torch.load(s))
     epoch= int(s.split("/")[-1].split(".")[0].split("-")[-1])

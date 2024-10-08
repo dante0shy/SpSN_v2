@@ -17,7 +17,7 @@ from SpSN_v2.utils.generate_sequential import *
 from SpSN_v2.config import *
 from MinkowskiEngine.utils import sparse_quantize, sparse_collate
 from sklearn.neighbors import KDTree
-
+import  torch_cluster
 val_base = "/home/dante0shy/dataset/KITTI"
 data_base = "/home/dante0shy/dataset/KITTI"
 input_base = os.path.join(data_base, "sequences")
@@ -81,6 +81,11 @@ def set_out_name(n):
     global out_name
     out_name = n
 
+v2p_k = 4
+def set_v2p_k(n):
+    global v2p_k
+    v2p_k = n
+
 def aug_rotate(a, seed):
 
     a = np.matmul(a, seed)  # +full_scale/2#+np.random.uniform(-2,2,3)
@@ -101,6 +106,7 @@ def trainMerge(tbl):
     trees_sur  = []
     ori_coords = []
     ori_coords_sur = []
+    cols, rows = [], []
     # idx=[]
     for idx, i in enumerate(tbl):
         # torch.load(train[i])
@@ -222,6 +228,14 @@ def trainMerge(tbl):
                 labels_sur.append(d[5].astype(float))
                 revs_sur.append(d[6])
                 ori_coords_sur.append(d[7].astype(float))
+
+                col, row = torch_cluster.knn(
+                    torch.from_numpy(ori_coords_sur[-1]).double(),
+                    torch.from_numpy(ori_coords[len(ori_coords_sur)-1]).double(),
+                    v2p_k,
+                )
+                rows.append(row)
+                cols.append(col)
         for i in range(frames - 1):
             pos = pre_frame - i - 1
             if pos < 0:
@@ -267,6 +281,8 @@ def trainMerge(tbl):
         "ori_locs": ori_coords,
         "ori_locs_sur": ori_coords_sur,
         "labels_sur": labels_sur,
+        "cols": cols,
+        "rows": rows,
     }
 
 
@@ -284,6 +300,7 @@ def valMerge(tbl):
     revs_sur = []
     ori_coords = []
     ori_coords_sur = []
+    cols, rows = [], []
     # idx=[]
     for idx, i in enumerate(tbl):
         # torch.load(train[i])
@@ -395,6 +412,14 @@ def valMerge(tbl):
                 labels_sur.append(d[5].astype(float))
                 revs_sur.append(d[6])
                 ori_coords_sur.append(d[7].astype(float))
+
+                col, row = torch_cluster.knn(
+                    torch.from_numpy(ori_coords_sur[-1]).double(),
+                    torch.from_numpy(ori_coords[len(ori_coords_sur)-1]).double(),
+                    v2p_k,
+                )
+                rows.append(row)
+                cols.append(col)
         for i in range(frames - 1):
             pos = pre_frame - i - 1
             if pos < 0:
@@ -441,6 +466,8 @@ def valMerge(tbl):
         "ori_locs": ori_coords,
         "ori_locs_sur": ori_coords_sur,
         "labels_sur": labels_sur,
+        "cols": cols,
+        "rows": rows,
     }
 
 
@@ -449,7 +476,7 @@ def get_val_data_loader():
         list(range(len(val))),
         batch_size= 1,#batch_size//2 if batch_size//2 >0 else
         collate_fn=valMerge,
-        num_workers=0,
+        num_workers=4,
         shuffle=False,
     )
 
