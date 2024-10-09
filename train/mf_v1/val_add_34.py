@@ -25,7 +25,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 from SpSN_v2.core import sq_model_mr_v1_add_34c as mdoel
-from SpSN_v2.utils.v2p_fintuner import V2PFinetuner_v5_4_cp_2 as V2PFinetuner
+from SpSN_v2.utils.v2p_fintuner import V2PFinetuner_v5_4 as V2PFinetuner
 from SpSN_v2.dataset import data_mutli_frame_v1_val as data
 from SpSN_v2.utils import np_ioueval
 import torch_cluster
