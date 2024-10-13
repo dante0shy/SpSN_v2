@@ -88,7 +88,7 @@ pertrain = True
 pertrain_dir = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "pretrained",
-    "net-000000032.pth",
+    "net-pre-000000032.pth",
 )
 if pertrain and not snap:
     print("Pertrained from {}".format(pertrain_dir))

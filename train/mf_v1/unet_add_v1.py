@@ -161,16 +161,7 @@ snap = list(sorted(snap, key=lambda x: int(x.split("-")[-1].split(".")[0])))
 #     "pretrained",
 #     "v5_f_model.pth",
 # )
-pertrain_dir='/home/dante0shy/remote_workplace/SpSN_v2/train/mf_v9_03/snap/finetuner_scale0.05_m16_rep1_1/optim-000000014.pth'
-if pertrain and not snap:
-    print("Pertrained from {}".format(pertrain_dir))
-    model_dict = v2p_fintuner.state_dict()
-    pretrained_dict = {
-        k: v for k, v in torch.load(pertrain_dir).items() if k in model_dict
-    }
-    # model_dict.update(pretrained_dict)
-    # v2p_fintuner.load_state_dict(model_dict)
-elif snap:
+if snap:
     print("Restore from " + snap[-1])
     v2p_fintuner.load_state_dict(torch.load(snap[-1]))
     epoch_s = int(snap[-1].split("/")[-1].split(".")[0].split("-")[-1])

@@ -125,8 +125,9 @@ for epoch in range(epoch_s, training_epochs):
     if train_first:
         with tqdm.tqdm(total=len(data.train) // data.batch_size) as pbar:
             for i, batch in enumerate(data.get_train_data_loader()):
-                torch.cuda.empty_cache()
                 optimizer.zero_grad()
+                torch.cuda.empty_cache()
+
                 unet.surpport_encoder.refresh_p(unet.main_encoder)
 
                 batch["y"] = batch["y"].to(device)
@@ -142,6 +143,9 @@ for epoch in range(epoch_s, training_epochs):
                 pbar.set_postfix({"T": "{0:1.5f}".format(train_loss / (i + 1))})
                 pbar.update(1)
                 del batch
+                del predictions
+                del loss
+                gc.collect()
         print(
             epoch, "Train loss", train_loss / (i + 1), "time=", time.time() - start, "s"
         )
@@ -171,6 +175,8 @@ for epoch in range(epoch_s, training_epochs):
             #     for i, batch in tqdm.tqdm(enumerate(data.get_val_data_loader()))://data.batch_size
             with tqdm.tqdm(total=len(data.val)) as pbar:
                 for i, batch in enumerate(data.get_val_data_loader()):
+                    torch.cuda.empty_cache()
+
                     batch["x"] = [
                         ME.SparseTensor(x[1].float(), coordinates=x[0], device=device)
                         for x in zip(*batch["x"])
