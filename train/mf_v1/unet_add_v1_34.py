@@ -300,6 +300,8 @@ for epoch in range(epoch_s, training_epochs):
                 pre_pre = None
                 init = 0
                 for i, batch in enumerate(data.get_val_data_loader()):
+                    torch.cuda.empty_cache()
+
                     batch["x"] = [
                         ME.SparseTensor(x[1].float(), coordinates=x[0], device=device)
                         for x in zip(*batch["x"])

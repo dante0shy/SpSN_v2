@@ -125,7 +125,6 @@ for epoch in range(epoch_s, training_epochs):
         with tqdm.tqdm(total=len(data.train) // data.batch_size) as pbar:
             for i, batch in enumerate(data.get_train_data_loader()):
                 optimizer.zero_grad()
-                # unet.refresh_p()
                 torch.cuda.empty_cache()
 
                 batch["y"] = batch["y"].to(device)

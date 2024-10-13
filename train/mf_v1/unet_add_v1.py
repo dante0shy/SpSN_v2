@@ -144,29 +144,23 @@ print(
 
 training_epochs = 50
 epoch_s = 0
-# snap = glob.glob(os.path.join(main_model_path, "net*.pth"))
-# snap = list(sorted(snap, key=lambda x: int(x.split("-")[-1].split(".")[0])))
 snap = ['/home/dante0shy/remote_workplace/SpSN_v2/pretrained/v9-032.pth']
 print("Restore from " + snap[-1])
 unet.load_state_dict(torch.load(snap[-1]))
-# for p in unet.parameters(): p.requires_grad = False
+for p in unet.parameters(): p.requires_grad = False
 
 train_first = True
 pertrain = False
 
 snap = glob.glob(os.path.join(log_dir, "v2p-fintuner*.pth"))
 snap = list(sorted(snap, key=lambda x: int(x.split("-")[-1].split(".")[0])))
-# pertrain_dir = os.path.join(
-#     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-#     "pretrained",
-#     "v5_f_model.pth",
-# )
+
 if snap:
     print("Restore from " + snap[-1])
     v2p_fintuner.load_state_dict(torch.load(snap[-1]))
     epoch_s = int(snap[-1].split("/")[-1].split(".")[0].split("-")[-1])
     optimizer.load_state_dict(torch.load(snap[-1].replace("v2p-fintuner-", "optim-")))
-    train_first = False
+    train_first = True
 
 for epoch in range(epoch_s, training_epochs):
 
@@ -185,6 +179,8 @@ for epoch in range(epoch_s, training_epochs):
         with tqdm.tqdm(total=len(data.train) // data.batch_size) as pbar:
             for i, batch in enumerate(data.get_train_data_loader()):
                 optimizer.zero_grad()
+                torch.cuda.empty_cache()
+
                 batch["y"] = batch["y"].to(device)
                 batch["x"] = [
                     ME.SparseTensor(x[1].float(), coordinates=x[0], device=device)
@@ -217,23 +213,24 @@ for epoch in range(epoch_s, training_epochs):
                     orilos = torch.from_numpy(batch["ori_locs"][b]).cuda().float()
                     orilos_sur = torch.from_numpy(batch["ori_locs_sur"][b]).cuda().float()
                     with torch.no_grad():
-                        # col,row, = torch_cluster.knn(
-                        #     orilos_sur.cpu(),
-                        #     orilos.cpu(),
-                        #     v2p_k,
-                        #     torch.zeros(batch["ori_locs_sur"][b].shape[0],dtype=torch.int64),
-                        #     torch.zeros(batch["o_locs"][b].shape[0], dtype=torch.int64),
-                        #
-                        # )
+                        col,row, = torch_cluster.knn(
+                            orilos_sur.cpu(),
+                            orilos.cpu(),
+                            v2p_k,
+                            # torch.zeros(batch["ori_locs_sur"][b].shape[0],dtype=torch.int64),
+                            # torch.zeros(batch["o_locs"][b].shape[0], dtype=torch.int64),
+
+                        )
                         col, row, = batch["cols"][b].cuda(),batch["rows"][b].cuda()
 
-                    idx_la_sur = row[col.argsort()]
-                    re_idx = col[col.argsort()]
 
-                    assert idx_la_sur.shape[0] %v2p_k ==0
+                        idx_la_sur = row[col.argsort()]
+                        re_idx = col[col.argsort()]
+                    # print('b : {}'.format(time.time() - stime))
+
                     mid_feature_Sur = torch.Tensor(np.eye(np_ioueval.N_CLASSES)[batch['labels_sur'][b].astype(int)]).cuda()[
-                            idx_la_sur.view(-1)
-                        ].view(-1, v2p_k, np_ioueval.N_CLASSES)
+                        idx_la_sur.flatten()
+                    ].view(-1, v2p_k, np_ioueval.N_CLASSES)
 
 
 
@@ -305,6 +302,8 @@ for epoch in range(epoch_s, training_epochs):
                 pre_pre = None
                 init = 0
                 for i, batch in enumerate(data.get_val_data_loader()):
+                    torch.cuda.empty_cache()
+
                     batch["x"] = [
                         ME.SparseTensor(x[1].float(), coordinates=x[0], device=device)
                         for x in zip(*batch["x"])
